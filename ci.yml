@@ -7,6 +7,10 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   # =========================================================================
   # JOB 1: Biên dịch, chạy Unit Test và đóng gói JAR
@@ -73,7 +77,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.REGISTRY_TOKEN }}
+          password: ${{ secrets.REGISTRY_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Chuẩn hóa tên Docker Image thành chữ thường
         id: meta
