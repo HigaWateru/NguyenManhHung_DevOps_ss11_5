@@ -20,6 +20,10 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   # =========================================================================
   # JOB 1: Biên dịch, chạy Unit Test và đóng gói JAR
@@ -86,7 +90,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.REGISTRY_TOKEN }}
+          password: ${{ secrets.REGISTRY_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Chuẩn hóa tên Docker Image thành chữ thường
         id: meta
@@ -111,14 +115,11 @@ jobs:
 1. **Kiến trúc luồng CI/CD 2 giai đoạn:** Tách bạch rõ ràng trách nhiệm giữa Job kiểm thử (CI) và Job đóng gói phát hành container (CD).
 2. **Kiểm soát chất lượng với `needs: test`:** Biểu đồ thực thi tạo liên kết mũi tên giữa 2 Jobs. Job `docker-build` chỉ kích hoạt khi Job `test` hoàn thành với kết quả xanh.
 3. **Cơ chế phòng vệ tự động (Fault Tolerance):** Khi cố tình làm đứt bài test JUnit, Job `test` báo lỗi đỏ và Job `docker-build` tự động rơi vào trạng thái `Skipped`, ngăn chặn hoàn toàn việc phát hành sản phẩm lỗi.
-4. **Tích hợp GHCR an toàn:** Đăng nhập và đẩy image trực tiếp lên GitHub Container Registry với bí mật `REGISTRY_TOKEN` và gắn thẻ tag `latest` kèm `${{ github.sha }}`.
+4. **Tích hợp GHCR an toàn:** Đăng nhập và đẩy image trực tiếp lên GitHub Container Registry với cơ chế xác thực an toàn và gắn thẻ tag `latest` kèm `${{ github.sha }}`.
 
 ---
 
 ## 4. Hình ảnh minh chứng nộp bài
 
-### Ảnh 1: Biểu đồ Workflow 2 Jobs kết nối thành công:
-![Workflow Graph Success](image/screenshot_success.png)
-
-### Ảnh 2: Biểu đồ Workflow khi Test lỗi dẫn đến Job 2 bị Bỏ qua (Skipped):
-![Workflow Graph Skipped](image/screenshot_skipped.png)
+### Ảnh màn hình Workflow biểu đồ 2 Jobs kết nối thành công:
+![Workflow Graph Success](image/image.png)
